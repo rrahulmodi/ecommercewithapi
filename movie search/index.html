@@ -8,36 +8,78 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <form>
-      <label for="fname">Type your Movie</label><br />
-      <input type="text" class="inputbox" id="search" name="searchbar" /><br />
-      <br />
-      <input type="submit" class="search" value="Search" />
-    </form>
-    <div class="search-page-container"></div>
+    <div class="container">
+      <form>
+        <label for="fname">Type your Movie</label><br />
+        <input
+          type="text"
+          class="inputbox"
+          id="search"
+          name="searchbar"
+        /><br />
+        <br />
+        <input type="submit" class="search-btn" value="Search" />
+      </form>
+      <div class="search-page-container"></div>
+    </div>
     <script>
       const form = document.querySelector("form");
+      const container = document.querySelector(".container");
       const input = document.querySelector(".inputbox");
       const api_key = "7e3b969bcab65db269e35761ec623454";
-      const searchBtn = document.querySelector(".search");
+      const searchBtn = document.querySelector(".search-btn");
       const searchPage = document.querySelector(".search-page-container");
-
-      search.onSubmit = (e) => {
-        e.preventDefault();
-        fetch(
+      class Movie {
+        constructor(result) {
+          Object.assign(this, result.results);
+        }
+        renderMovie() {
+          return `
+          <div class="movie-container">
+          <div class="image-container">
+                 <img src='${this.poster_path}'/>
+          </div>
+          <div class="movie-content-container">
+            <div class="title">
+              <h4>${this.title}</h4>
+              <p>${this.release_date}</p>
+            </div>
+            <div class="movie-details">
+              <p>${this.popularity}</p>
+              <p>${this.overview}</p>
+              <button class="add-watchlist-btn">Watchlist</button>
+            </div>
+            <div class="movie-desc">
+              <p>${this.vote_average}</p>
+            </div>
+          </div>
+          </div>
+        `;
+        }
+      }
+      function getMovie(movieTitle) {
+        return fetch(
           "https://api.themoviedb.org/3/search/movie?api_key=" +
             api_key +
             "&language=en-US&query=" +
-            inputbox.value +
+            input.value +
             "&page=1&include_adult=true"
         )
           .then((response) => {
             return response.json();
           })
           .then((result) => {
-            console.log(result);
-            return result;
+            console.log(result.results);
+            return result.results;
           });
+      }
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        getMovie(input.value).then((response) => {
+          container.removeChild(searchPage);
+          container.innerHTML += new Movie(response).renderMovie();
+        });
+        input.value = "";
       };
     </script>
   </body>
